@@ -93,7 +93,7 @@ impl Component for Chat {
                             .map(|u| UserProfile {
                                 name: u.into(),
                                 avatar: format!(
-                                    "https://avatars.dicebear.com/api/adventurer-neutral/{}.svg",
+                                    "https://api.dicebear.com/7.x/adventurer-neutral/svg?seed={}",
                                     u
                                 )
                                 .into(),
@@ -102,10 +102,15 @@ impl Component for Chat {
                         return true;
                     }
                     MsgTypes::Message => {
-                        let message_data: MessageData =
-                            serde_json::from_str(&msg.data.unwrap()).unwrap();
-                        self.messages.push(message_data);
-                        return true;
+                        if let Some(data) = msg.data {
+                            if let Ok(message_data) = serde_json::from_str::<MessageData>(&data) {
+                                self.messages.push(message_data);
+                                return true;
+                            } else {
+                                log::debug!("failed to parse message");
+                            }
+                        }
+                        return false;
                     }
                     _ => {
                         return false;
@@ -115,12 +120,13 @@ impl Component for Chat {
             Msg::SubmitMessage => {
                 let input = self.chat_input.cast::<HtmlInputElement>();
                 if let Some(input) = input {
-                    //log::debug!("got input: {:?}", input.value());
+
                     let message = WebSocketMessage {
                         message_type: MsgTypes::Message,
                         data: Some(input.value()),
                         data_array: None,
                     };
+
                     if let Err(e) = self
                         .wss
                         .tx
@@ -129,8 +135,10 @@ impl Component for Chat {
                     {
                         log::debug!("error sending to channel: {:?}", e);
                     }
+
                     input.set_value("");
                 };
+
                 false
             }
         }
@@ -147,7 +155,9 @@ impl Component for Chat {
                             html!{
                                 <div class="flex m-3 bg-white rounded-lg p-2">
                                     <div>
-                                        <img class="w-12 h-12 rounded-full" src={u.avatar.clone()} alt="avatar"/>
+                                        <img class="w-14 h-14 rounded-full border-2 border-violet-400 shadow-md"
+                                            src={u.avatar.clone()}
+                                            alt="avatar"/>
                                     </div>
                                     <div class="flex-grow p-3">
                                         <div class="flex text-xs justify-between">
@@ -163,28 +173,54 @@ impl Component for Chat {
                     }
                 </div>
                 <div class="grow h-screen flex flex-col">
-                    <div class="w-full h-14 border-b-2 border-gray-300"><div class="text-xl p-3">{"💬 Chat!"}</div></div>
+                    <div class="w-full h-20 border-b-2 border-gray-300 bg-violet-100">
+                        <div class="text-2xl p-3 font-bold text-violet-700">
+                            {"💬 Renata's WebChat"}
+                        </div>
+                        <div class="text-xs px-3 text-gray-500">
+                            {"Connect, chat, and share ideas in real-time 🚀"}
+                        </div>
+                    </div>
                     <div class="w-full grow overflow-auto border-b-2 border-gray-300">
                         {
                             self.messages.iter().map(|m| {
-                                let user = self.users.iter().find(|u| u.name == m.from).unwrap();
-                                html!{
-                                    <div class="flex items-end w-3/6 bg-gray-100 m-8 rounded-tl-lg rounded-tr-lg rounded-br-lg ">
-                                        <img class="w-8 h-8 rounded-full m-3" src={user.avatar.clone()} alt="avatar"/>
-                                        <div class="p-3">
-                                            <div class="text-sm">
-                                                {m.from.clone()}
-                                            </div>
-                                            <div class="text-xs text-gray-500">
-                                                if m.message.ends_with(".gif") {
-                                                    <img class="mt-3" src={m.message.clone()}/>
-                                                } else {
-                                                    {m.message.clone()}
-                                                }
+
+                                if let Some(user) = self.users.iter().find(|u| u.name == m.from) {
+
+                                    html!{
+                                        <div class="flex items-end w-3/6 bg-gray-100 m-8 rounded-tl-lg rounded-tr-lg rounded-br-lg ">
+                                            <img class="w-8 h-8 rounded-full m-3" src={user.avatar.clone()} alt="avatar"/>
+
+                                            <div class="p-3">
+
+                                                <div class="flex gap-2 items-center">
+                                                    <div class="text-sm font-bold text-violet-700">
+                                                        {m.from.clone()}
+                                                    </div>
+                                                </div>
+
+                                                <div class="text-xs text-gray-500">
+                                                    {
+                                                        if m.message.ends_with(".gif") {
+                                                            html! {
+                                                                <img class="mt-3" src={m.message.clone()}/>
+                                                            }
+                                                        } else {
+                                                            html! {
+                                                                {m.message.clone()}
+                                                            }
+                                                        }
+                                                    }
+                                                </div>
+
                                             </div>
                                         </div>
-                                    </div>
+                                    }
+
+                                } else {
+                                    html! {}
                                 }
+
                             }).collect::<Html>()
                         }
 
