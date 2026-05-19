@@ -1,21 +1,5 @@
-# YewChat 💬
+# Experiment 3.1: Original code
 
-> Source code for [Let’s Build a Websocket Chat Project With Rust and Yew 0.19 🦀](https://fsjohnny.medium.com/lets-build-a-websockets-project-with-rust-and-yew-0-19-60720367399f)
-
-## Install
-
-1. Install the required toolchain dependencies:
-   ```npm i```
-
-2. Follow the YewChat post!
-
-## Branches
-
-This repository is divided to branches that correspond to the blog post sections:
-
-* main - The starter code.
-* routing - The code at the end of the Routing section.
-* components-part1 - The code at the end of the Components-Phase 1 section.
-* websockets - The code at the end of the Hello Websockets! section.
-* components-part2 - The code at the end of the Components-Phase 2 section.
-* websockets-part2 - The code at the end of the WebSockets-Phase 2 section.
+![halaman login](assets/images/experiment-3.1-login.png)
+![halaman chat](assets/images/experiment-3.1-chat.png)
+Pada eksperimen ini, saya menjalankan aplikasi web chat berbasis Yew dan websocket. Aplikasi terdiri dari dua bagian, yaitu websocket server berbasis NodeJS dan web client berbasis Rust menggunakan framework Yew. Untuk menjalankan server, saya melakukan `npm install` lalu `npm start` pada project SimpleWebsocketServer. Setelah itu, saya menjalankan project YewChat menggunakan `npm install` dan `npm start`, kemudian membuka aplikasi melalui browser. Aplikasi berhasil menampilkan halaman login dan halaman chat yang dapat digunakan oleh beberapa user secara bersamaan. Ketika salah satu user mengirim pesan, pesan tersebut langsung muncul secara real-time pada browser user lain melalui websocket connection. Dari eksperimen ini, saya memahami bagaimana asynchronous websocket communication digunakan untuk membuat aplikasi chat berbasis web secara real-time.

@@ -5,27 +5,28 @@ const WasmPackPlugin = require('@wasm-tool/wasm-pack-plugin');
 const distPath = path.resolve(__dirname, 'dist');
 
 module.exports = {
-    mode: 'production',
+    mode: 'development', 
+    entry: './bootstrap.js',
     devServer: {
         port: 8000,
+        historyApiFallback: true,
     },
-    entry: './bootstrap.js',
     output: {
         path: distPath,
         filename: 'yewchat.js',
-        webassemblyModuleFilename: 'yewchat_bg.wasm',
     },
     plugins: [
         new CopyWebpackPlugin({
             patterns: [{ from: './static', to: distPath }],
         }),
         new WasmPackPlugin({
-            crateDirectory: '.',
-            extraArgs: '-- --features wee_alloc',
+            crateDirectory: path.resolve(__dirname, '.'),
             outName: 'yewchat',
+            outDir: path.resolve(__dirname, 'pkg'),
         }),
     ],
     experiments: {
-        asyncWebAssembly: true,
+        asyncWebAssembly: false, 
+        syncWebAssembly: true,
     },
 };
